@@ -4,8 +4,11 @@
 
 from __future__ import annotations
 
+import os
 from functools import cache
 from pathlib import Path
+
+from nibabies import config
 
 
 def fix_multi_source_name(in_files):
@@ -154,3 +157,19 @@ def estimate_bold_mem_usage(bold_fname: str) -> tuple[int, dict]:
         'largemem': bold_size_gb * (max(bold_tlen / 100, 1.0) + 4),
     }
     return bold_tlen, mem_gb
+
+
+def _check_fname(
+    fname: str | Path,
+    must_exist: bool = False,
+    ) -> Path:
+    """Check for file existence, and return its absolute path."""
+    fname = Path(fname).expanduser().absolute()
+    if fname.exists():
+        if not os.access(fname, os.R_OK):
+            raise PermissionError(f'File does not have read permissions: {fname}')
+    elif must_exist:
+        raise FileNotFoundError(f'File does not exist: {fname}')
+    else:
+        config.logger.workflow.debug(f'File does not exist: {fname}')
+    return fname
