@@ -10,6 +10,8 @@ from nipype.interfaces.base import (
     traits,
 )
 
+from nibabies.utils.misc import _check_fname
+
 
 class MCRIBReconAllInputSpec(CommandLineInputSpec):
     # Input structure massaging
@@ -153,6 +155,7 @@ class MCRIBReconAll(CommandLine):
             t2w.parent.mkdir(**mkdir_kw)
             if not t2w.exists():
                 shutil.copy(self.inputs.t2w_file, str(t2w))
+            _ = _check_fname(t2w, must_exist=True)
 
             if not self.inputs.conform:
                 t2wiso = root / 'RawT2RadiologicalIsotropic' / f'{sid}.nii.gz'
@@ -172,6 +175,7 @@ class MCRIBReconAll(CommandLine):
             tisseg.parent.mkdir(**mkdir_kw)
             if not tisseg.exists():
                 shutil.copy(self.inputs.segmentation_file, str(tisseg))
+            _ = _check_fname(tisseg, must_exist=True)
             manedit = tisseg.parent / f'{sid}_all_labels_manedit.nii.gz'
             if not manedit.exists():
                 manedit.symlink_to(tisseg.name)
@@ -190,6 +194,7 @@ class MCRIBReconAll(CommandLine):
                     surfrec_mask = surfrec.parent / 'brain-mask.nii.gz'
                     if not surfrec_mask.exists():
                         shutil.copy(self.inputs.mask_file, str(surfrec_mask))
+                    _ = _check_fname(surfrec_mask, must_exist=True)
 
         if self.inputs.surfrecon:
             # Create FreeSurfer layout to safeguard against cd-ing into missing directories
